@@ -5,6 +5,8 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+
+	rest_server "github.com/{{cookiecutter.org_name}}/{{cookiecutter.app_name}}/cmd/rest"
 )
 
 var cfgFile string
@@ -27,6 +29,14 @@ to quickly create a Cobra application.`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+
+	// Registering CMD
+	{% if cookiecutter.add_rest_server != "none" %}
+	rest_server.RestCmd.PersistentFlags().StringVar(&rest_server.ENV, "env", "dev", "--env=dev")
+	rest_server.RestCmd.PersistentFlags().StringVar(&rest_server.Address, "port", "dev", "--env=dev")
+	rootCmd.AddCommand(rest_server.RestCmd)
+	{% endif %}
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

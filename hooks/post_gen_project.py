@@ -35,6 +35,18 @@ def init_git():
         git = Popen(command, cwd=PROJECT_DIRECTORY)
         git.wait()
 
+def mod_tidy():
+    """
+    Tidying go modules
+    """
+    GO_COMMANDS = [
+        ["go", "mod", "tidy"]
+    ]
+
+    for command in GO_COMMANDS:
+        g = Popen(command, cwd=PROJECT_DIRECTORY)
+        g.wait()
+
 
 def remove_docker_files():
     """
@@ -77,6 +89,18 @@ def remove_circleci_files():
         PROJECT_DIRECTORY, ".circleci"
     ))
 
+def remove_rest_files():
+    """
+    Removes files needed for rest config utils
+    """
+    shutil.rmtree(os.path.join(
+        PROJECT_DIRECTORY, "cmd/rest"
+    ))
+
+    shutil.rmtree(os.path.join(
+        PROJECT_DIRECTORY, "pkg/xrender"
+    ))
+
 # 1. Remove Dockerfiles if docker is not going to be used
 if '{{ cookiecutter.use_docker }}'.lower() != 'y':
     remove_docker_files()
@@ -85,31 +109,34 @@ if '{{ cookiecutter.use_docker }}'.lower() != 'y':
 if '{{ cookiecutter.use_viper_config }}'.lower() != 'y':
     remove_viper_files()
 
-# 3. Remove logrus utils if not seleted
-if '{{ cookiecutter.use_logrus_logging }}'.lower() != 'y':
-    remove_logrus_files()
-
-# 4. Remove cobra utils if not seleted
+# 3. Remove cobra utils if not seleted
 if '{{ cookiecutter.use_cobra_cmd }}'.lower() != 'y':
     remove_cobra_files()
 
-# 5. Remove unused ci choice
+# 4. Remove unused ci choice
 if '{{ cookiecutter.use_ci}}'.lower() == 'travis':
     remove_circleci_files()
+    remove_file("bitbucket-pipelines.yml")
 elif '{{ cookiecutter.use_ci}}'.lower() == 'circle':
     remove_file(".travis.yml")
+    remove_file("bitbucket-pipelines.yml")
+elif '{{ cookiecutter.use_ci}}'.lower() == 'bitbucket':
+    remove_circleci_files()
+    remove_file(".travis.yml")
 else:
     remove_file(".travis.yml")
+    remove_file("bitbucket-pipelines.yml")
     remove_circleci_files()
 
-# 6. Remove files depending on selection of mod or dep
-if '{{ cookiecutter.go_mod_or_dep}}'.lower() == 'mod':
-    remove_file("Gopkg.toml")
-else:
-    remove_file("go.mod")
 
-# 7. Initialize Git (should be run after all file have been modified or deleted)
+# 6. Initialize Git (should be run after all file have been modified or deleted)
 if '{{ cookiecutter.use_git }}'.lower() == 'y':
     init_git()
 else:
     remove_file(".gitignore")
+
+# 7. Remove rest handler
+if '{{ cookiecutter.add_rest_server }}'.lower() == 'none':
+    remove_rest_files()
+
+    

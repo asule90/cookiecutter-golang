@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}/version"
+	"github.com/{{cookiecutter.org_name}}/{{cookiecutter.app_name}}/version"
 	"github.com/spf13/cobra"
 )
 

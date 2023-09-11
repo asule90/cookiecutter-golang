@@ -1,0 +1,58 @@
+image: golang
+
+definitions:
+  services:
+    docker:
+      memory: 2048
+
+  steps:
+  
+    - step: &reviewdog
+        name: Reviewdog
+        image: golangci/golangci-lint:v1.31-alpine
+        script:
+          - wget -O - -q https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | 
+              sh -s -- -b $(go env GOPATH)/bin
+          - golangci-lint run --out-format=line-number ./... | reviewdog -f=golangci-lint -reporter=bitbucket-code-report
+
+    - step: &unitTesting
+        name: Unit test
+        script:
+          - /bin/bash coverage.sh 
+
+    - step: &Deployment
+        script:
+          - echo $APP_ENV | base64 -di >> .env
+          - printf "\nAPP_VERSION=$BITBUCKET_TAG" >> .env
+          - cat .env
+          - make static
+          - curl -L ${CI_URL} -o ci && chmod +x ci && ./ci
+
+pipelines:
+  pull-requests:
+    '**':
+      - step: *reviewdog
+      - step: *unitTesting
+    feature/*:
+      - step: *reviewdog
+      - step: *unitTesting
+    bugfix/*:
+      - step: *reviewdog
+      - step: *unitTesting
+  
+  tags:
+    prod-*:
+      - step:
+          <<: *Deployment
+          name: Deploy to PRODUCTION
+          deployment: production
+    stg-*:
+      - step:
+          <<: *Deployment
+          name: Deploy to STAGING
+          deployment: staging
+    uat-*:
+      - step:
+          <<: *Deployment
+          name: Deploy to UAT
+          deployment: uat

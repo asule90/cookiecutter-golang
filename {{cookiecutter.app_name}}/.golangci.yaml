@@ -1,0 +1,74 @@
+linters:
+  enable-all: true
+
+  disable:
+    - goerr113
+    - gofumpt
+    - gomnd 
+    - golint
+    - interfacer
+    - maligned
+    - scopelint
+    - tagliatelle
+    - testpackage
+    - wsl
+    - varnamelen
+    - exhaustivestruct
+    - gochecknoglobals
+    - godox
+    - gochecknoinits
+    - forbidigo
+    - wrapcheck
+    - gci
+
+linters-settings:
+  lll:
+    line-length: 130
+
+  funlen:
+    lines: 100
+    statements: 50
+
+  varnamelen:
+    max-distance: 10
+    ignore-type-assert-ok: true
+    ignore-map-index-ok: true
+    ignore-chan-recv-ok: true
+    ignore-decls:
+      - b bytes.Buffer
+      - h http.Handler
+      - id string
+      - ok bool
+      - r *http.Request
+      - w http.ResponseWriter
+      - r *chi.Mux
+      
+  wrapcheck:
+    ignoreSigs:
+      - fmt.Errorf(
+      - xerrors.NewErrorf(
+      - xerrors.WrapErrorf(
+      
+issues:
+  exclude-rules:
+    # All tests
+    - path: _test\.go
+      linters:
+        - cyclop
+        - exhaustivestruct
+        - funlen
+        - goerr113
+        - lll
+        - varnamelen
+        - wrapcheck
+
+    # All generate code
+    - path: _.gen\.go
+      linters:
+        - cyclop
+        - exhaustivestruct
+        - funlen
+        - goerr113
+        - lll
+        - varnamelen
+        - wrapcheck

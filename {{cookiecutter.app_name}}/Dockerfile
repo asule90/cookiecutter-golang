@@ -1,40 +1,12 @@
 # Build Stage
-FROM {{cookiecutter.docker_build_image}}:{{cookiecutter.docker_build_image_version}} AS build-stage
-
-LABEL app="build-{{cookiecutter.app_name}}"
-LABEL REPO="https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}"
-
-ENV PROJPATH=/go/src/github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}
-
-# Because of https://github.com/docker/docker/issues/14914
-ENV PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-
-ADD . /go/src/github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}
-WORKDIR /go/src/github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}
-
-RUN make build-alpine
+FROM {{cookiecutter.docker_base_image}}:{{cookiecutter.docker_base_image_version}} AS build-stage
+WORKDIR /app
+ADD . .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o main .
 
 # Final Stage
-FROM {{cookiecutter.docker_image}}
+FROM gcr.io/distroless/base-debian11 as production
+COPY --from=build-stage /app/main /
+EXPOSE 8003
 
-ARG GIT_COMMIT
-ARG VERSION
-LABEL REPO="https://github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}"
-LABEL GIT_COMMIT=$GIT_COMMIT
-LABEL VERSION=$VERSION
-
-# Because of https://github.com/docker/docker/issues/14914
-ENV PATH=$PATH:/opt/{{cookiecutter.app_name}}/bin
-
-WORKDIR /opt/{{cookiecutter.app_name}}/bin
-
-COPY --from=build-stage /go/src/github.com/{{cookiecutter.github_username}}/{{cookiecutter.app_name}}/bin/{{cookiecutter.app_name}} /opt/{{cookiecutter.app_name}}/bin/
-RUN chmod +x /opt/{{cookiecutter.app_name}}/bin/{{cookiecutter.app_name}}
-
-# Create appuser
-RUN adduser -D -g '' {{cookiecutter.app_name}}
-USER {{cookiecutter.app_name}}
-
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-
-CMD ["/opt/{{cookiecutter.app_name}}/bin/{{cookiecutter.app_name}}"]
+ENTRYPOINT [ "./main" ]
