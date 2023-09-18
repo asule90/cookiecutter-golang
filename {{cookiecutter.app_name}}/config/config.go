@@ -1,31 +1,33 @@
 package config
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
+	"github.com/{{cookiecutter.org_name}}/{{cookiecutter.app_name}}/pkg/env"
 	"github.com/joho/godotenv"
 )
 
 type Provider struct {
-	App       *App
-	Postgres  *Postgres
-	JWT       *JWT
+	App      *App
+	Postgres *Postgres
+	JWT      *JWT
 }
 
 func LoadConfig(file string) *Provider {
-	err := godotenv.Load(file)
+	err := godotenv.Overload(file)
 	if err != nil {
 		fmt.Println(".env not found (but expected on prod)")
 	}
 
 	app := &App{
-		Env:     env.Get("APP_ENV", "local"),
-		Host:    env.Get("APP_HOST", "localhost"),
-		Port:    env.Get("APP_PORT", 8080),
-		Name:    env.Get("APP_NAME", "service-customer-v3"),
-		Secret:  env.Get("APP_SECRET", ""),
-		Version: env.Get("APP_VERSION", ""),
+		Env:      env.Get("APP_ENV", "local"),
+		Host:     env.Get("APP_HOST", "localhost"),
+		Port:     env.Get("APP_PORT", 8080),
+		Name:     env.Get("APP_NAME", "golang project"),
+		Timezone: env.Get("APP_TIMEZONE", "Asia/Jakarta"),
+		Secret:   env.Get("APP_SECRET", ""),
+		Version:  env.Get("APP_VERSION", ""),
 	}
 
 	postgres := &Postgres{
@@ -42,9 +44,9 @@ func LoadConfig(file string) *Provider {
 	}
 
 	cfg := &Provider{
-		App:       app,
-		Postgres:  postgres,
-		JWT:       jwt,
+		App:      app,
+		Postgres: postgres,
+		JWT:      jwt,
 	}
 
 	return cfg
