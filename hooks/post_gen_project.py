@@ -57,17 +57,10 @@ def remove_docker_files():
             PROJECT_DIRECTORY, filename
         ))
 
-def remove_viper_files():
-    """
-    Removes files needed for viper config utils
-    """
-    shutil.rmtree(os.path.join(
-        PROJECT_DIRECTORY, "config"
-    ))
 
 def remove_logrus_files():
     """
-    Removes files needed for viper config utils
+    Removes files needed for log utils
     """
     shutil.rmtree(os.path.join(
         PROJECT_DIRECTORY, "log"
@@ -75,7 +68,7 @@ def remove_logrus_files():
 
 def remove_cobra_files():
     """
-    Removes files needed for viper config utils
+    Removes files needed for cmd config utils
     """
     shutil.rmtree(os.path.join(
         PROJECT_DIRECTORY, "cmd"
@@ -83,7 +76,7 @@ def remove_cobra_files():
 
 def remove_circleci_files():
     """
-    Removes files needed for viper config utils
+    Removes files needed for circleci config utils
     """
     shutil.rmtree(os.path.join(
         PROJECT_DIRECTORY, ".circleci"
@@ -104,10 +97,6 @@ def remove_rest_files():
 # 1. Remove Dockerfiles if docker is not going to be used
 if '{{ cookiecutter.use_docker }}'.lower() != 'y':
     remove_docker_files()
-
-# 2. Remove viper config if not seleted
-if '{{ cookiecutter.use_viper_config }}'.lower() != 'y':
-    remove_viper_files()
 
 # 3. Remove cobra utils if not seleted
 if '{{ cookiecutter.use_cobra_cmd }}'.lower() != 'y':

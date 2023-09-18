@@ -21,7 +21,6 @@ def context():
         "docker_base_image": "golang",
         "use_docker": "y",
         "use_git": "y",
-        "use_viper_config": "y"
 }
 
 def build_files_list(root_dir):
@@ -56,7 +55,7 @@ def test_default_configuration(cookies, context):
     assert paths
     check_paths(paths)
 
-@pytest.fixture(params=['use_docker', 'use_git', 'use_viper_config'])
+@pytest.fixture(params=['use_docker', 'use_git'])
 def feature_context(request, context):
     context.update({request.param: 'n'})
     return context

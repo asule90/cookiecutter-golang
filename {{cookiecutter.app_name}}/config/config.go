@@ -4,49 +4,48 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
-// Provider defines a set of read-only methods for accessing the application
-// configuration params as defined in one of the config files.
-type Provider interface {
-	ConfigFileUsed() string
-	Get(key string) interface{}
-	GetBool(key string) bool
-	GetDuration(key string) time.Duration
-	GetFloat64(key string) float64
-	GetInt(key string) int
-	GetInt64(key string) int64
-	GetSizeInBytes(key string) uint
-	GetString(key string) string
-	GetStringMap(key string) map[string]interface{}
-	GetStringMapString(key string) map[string]string
-	GetStringMapStringSlice(key string) map[string][]string
-	GetStringSlice(key string) []string
-	GetTime(key string) time.Time
-	InConfig(key string) bool
-	IsSet(key string) bool
+type Provider struct {
+	App       *App
+	Postgres  *Postgres
+	JWT       *JWT
 }
 
-var defaultConfig *viper.Viper
+func LoadConfig(file string) *Provider {
+	err := godotenv.Load(file)
+	if err != nil {
+		fmt.Println(".env not found (but expected on prod)")
+	}
 
-// Config returns a default config providers
-func Config() Provider {
-	return defaultConfig
-}
+	app := &App{
+		Env:     env.Get("APP_ENV", "local"),
+		Host:    env.Get("APP_HOST", "localhost"),
+		Port:    env.Get("APP_PORT", 8080),
+		Name:    env.Get("APP_NAME", "service-customer-v3"),
+		Secret:  env.Get("APP_SECRET", ""),
+		Version: env.Get("APP_VERSION", ""),
+	}
 
-// LoadConfigProvider returns a configured viper instance
-func LoadConfigProvider(appName string) Provider {
-	return readViperConfig(appName)
-}
+	postgres := &Postgres{
+		Url:             env.Get("POSTGRES_URL", "postgres://postgres:postgres@localhost:5432/customer?sslmode=disable"),
+		MaxIdleConns:    env.Get("POSTGRES_IDLE_CONNS", 10),
+		MaxOpenConns:    env.Get("POSTGRES_MAX_OPEN_CONNS", 50),
+		ConnMaxLifetime: env.GetDuration("POSTGRES_CONN_MAX_LIFETIME", 1*time.Hour),
+		ConnMaxIdleTime: env.GetDuration("POSTGRES_CONN_MAX_IDLE_TIME", 20*time.Minute),
+	}
 
-func init() {
-	defaultConfig = readViperConfig("{{cookiecutter.app_name|upper}}")
-}
+	jwt := &JWT{
+		Key:         env.Get("JWT_SECRET", ""),
+		StaticToken: env.Get("STATIC_TOKEN", ""),
+	}
 
-func readViperConfig(appName string) *viper.Viper {
-	v := viper.New()
-	v.SetEnvPrefix(appName)
-	v.AutomaticEnv()
+	cfg := &Provider{
+		App:       app,
+		Postgres:  postgres,
+		JWT:       jwt,
+	}
 
-	return v
+	return cfg
 }

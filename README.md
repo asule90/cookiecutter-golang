@@ -74,7 +74,6 @@ project_short_description [A Golang project.]: Awesome Echo Server
 docker_base_image [lacion/docker-alpine:gobuildimage]: lacion/docker-alpine:gobuildimage
 use_docker [y]: y
 use_git [y]: y
-use_viper_config [y]: y
 use_cobra_cmd [y]: y
 Select use_ci:
 1 - travis
